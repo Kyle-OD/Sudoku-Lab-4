@@ -69,6 +69,9 @@ public class Sudoku extends LatinSquare {
 		int[][] puzzle = new int[iSize][iSize];
 		super.setLatinSquare(puzzle);
 		FillDiagonalRegions();
+		
+		SetCells();
+		fillRemaining(cells.get(Objects.hash(0,0)));
 	}
 
 	/**
@@ -291,6 +294,10 @@ public class Sudoku extends LatinSquare {
 		
 		return true;
 	}
+	
+	public boolean isValidValue(Sudoku.Cell c, int iValue) {
+		return isValidValue(c.iRow,c.iRow,iValue);
+	}
 
 	/**
 	 * PrintPuzzle This method will print the puzzle to the console (space between
@@ -323,7 +330,7 @@ public class Sudoku extends LatinSquare {
 	 */
 	private void FillDiagonalRegions() {
 
-		for (int i = 0; i < iSize; i = i + iSqrtSize) {
+		for (int i = 0; i < iSize; i = i + iSqrtSize + 1) {
 			System.out.println("Filling region: " + getRegionNbr(i, i));
 			SetRegion(getRegionNbr(i, i));
 			ShuffleRegion(getRegionNbr(i, i));
@@ -418,6 +425,47 @@ public class Sudoku extends LatinSquare {
 		}
 	}
 	
+	private HashSet<Integer> getAllValidCellValues(int iCol, int iRow){
+		HashSet<Integer> hs = new HashSet<Integer>();
+		int[][] puzzle = this.getLatinSquare();
+		if(puzzle[iRow][iCol]!=0) {
+			hs.add((Integer)puzzle[iRow][iCol]);
+			return hs;
+		}
+		for(int val = 1; val<=iSize; val++) {
+			if(this.isValidValue(iRow,iCol,val)) {
+				hs.add((Integer)val);
+			}
+		}
+		
+		return hs;
+	}
+	
+	private void SetCells() {
+		for(int iRow = 0;iRow<iSize;iRow++) {
+			for(int iCol = 0; iCol<iSize;iCol++) {
+				Cell c = new Cell(iCol,iRow);
+				c.setlstValidValues(this.getAllValidCellValues(iCol, iRow));
+				Collections.shuffle(c.lstValidValues);
+				cells.put(c.hashCode(), c);
+			}
+		}
+	}
+	
+	private boolean fillRemaining(Sudoku.Cell c) {
+		if(c==null)
+			return true;
+		for(Integer n:c.lstValidValues) {
+			if(this.isValidValue(c, n)) {
+				this.getPuzzle()[c.getiRow()][c.getiCol()] = n;
+				fillRemaining(c.GetNextCell(c, iSize));
+			}			
+		}	
+		return false;
+	}
+	
+	
+	
 	private class Cell{
 		private int iCol;
 		private int iRow;
@@ -467,7 +515,7 @@ public class Sudoku extends LatinSquare {
 				return null;
 			}
 				
-			return new Cell(nextCol,nextRow);
+			return cells.get(Objects.hash(nextCol,nextRow));
 		}
 		
 		public void setlstValidValues(HashSet<Integer> hsValidValues) {
