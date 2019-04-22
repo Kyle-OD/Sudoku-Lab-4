@@ -2,6 +2,7 @@ package pkgGame;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,7 +22,7 @@ import pkgHelper.LatinSquare;
  */
 public class Sudoku extends LatinSquare {
 	
-	HashMap<Integer,Cell> cells = new HashMap<Integer,Cell>();
+	private HashMap<Integer,Cell> cells = new HashMap<Integer,Cell>();
 
 	/**
 	 * 
@@ -296,7 +297,7 @@ public class Sudoku extends LatinSquare {
 	}
 	
 	public boolean isValidValue(Sudoku.Cell c, int iValue) {
-		return isValidValue(c.iRow,c.iRow,iValue);
+		return isValidValue(c.iRow,c.iCol,iValue);
 	}
 
 	/**
@@ -446,20 +447,28 @@ public class Sudoku extends LatinSquare {
 			for(int iCol = 0; iCol<iSize;iCol++) {
 				Cell c = new Cell(iCol,iRow);
 				c.setlstValidValues(this.getAllValidCellValues(iCol, iRow));
-				Collections.shuffle(c.lstValidValues);
+				c.ShuffleValidValues();
 				cells.put(c.hashCode(), c);
 			}
 		}
 	}
 	
 	private boolean fillRemaining(Sudoku.Cell c) {
-		if(c==null)
+		if(c==null) {
 			return true;
-		for(Integer n:c.lstValidValues) {
+		}
+		for(Integer n:c.getLstValidValues()) {
+			if(c.getLstValidValues().size()==1) {
+				this.getPuzzle()[c.getiRow()][c.getiCol()] = n;
+				if(fillRemaining(c.GetNextCell(c, iSize)))
+					return true;
+			}
 			if(this.isValidValue(c, n)) {
 				this.getPuzzle()[c.getiRow()][c.getiCol()] = n;
-				fillRemaining(c.GetNextCell(c, iSize));
-			}			
+				if(fillRemaining(c.GetNextCell(c, iSize)))
+					return true;	
+				this.getPuzzle()[c.getiRow()][c.getiCol()] = 0;
+			}	
 		}	
 		return false;
 	}

@@ -7,6 +7,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
+import pkgGame.Sudoku;
+
 import org.junit.Test;
 
 public class SudokuPrivateMethodsTest {
@@ -123,5 +125,12 @@ public class SudokuPrivateMethodsTest {
 			fail("InvocationTargetException, Invalid size");
 		}
 
+	}
+	
+	@Test
+	public void FillRemaining_Test() throws Exception {
+		int size = 9;
+		Sudoku test = new Sudoku(9);
+		test.PrintPuzzle();
 	}
 }
